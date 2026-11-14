@@ -1,9 +1,18 @@
-# Diploma in Orthodontics — FPros reference layout
+# Diploma Orthodontics — smaller upload packages
 
-This is the corrected ORTHODONTICS package, containing four orthodontics volumes. Do not use the earlier implant dentistry download for this website.
+Download all SIX packages, then unzip them. All content from the previous complete website is retained.
 
-Unzip this archive and upload the CONTENTS of the pages folder into your existing GitHub Pages publishing directory, replacing matching files. Keep index.html at the publishing root. Do not upload the ZIP as the website. There are 22 files; none exceeds 2 MB.
+Upload package 01 FIRST, then 02–06, to the SAME GitHub repository publishing directory. Upload the extracted CONTENTS, never the ZIP files. The publishing root must contain index.html, quiz.html, data/, pdfs/ and pages/.
 
-The dashboard, revision notes, handbook and question practice now use the supplied FPros design reference. All four source PDFs, extracted notes, questions and answer keys are preserved. Scores remain separate per bank/block/type set; dashboard completion counts unique questions across sets without duplication. A draft is not counted until submitted.
+Packages 02–06 each contain a pages folder. Merge its files into the SAME pages folder; do not replace the whole folder or nest pages inside pages. Upload one package at a time and commit each batch. Do not create folders named 01_Core, 02_Volume_I, etc. on GitHub.
 
-Keep the same website address and browser to retain existing reading bookmarks and quiz progress. Download a progress backup from practice before updating. Progress does not automatically sync between devices. Use the published GitHub Pages URL in Safari on iPhone/iPad; physical iOS testing was not performed. This package does not add a service worker or promise cached offline operation on iOS. Extracted local HTML can be used with a browser that supports local files.
+01 Core: website, notes text, all questions, progress/scoring code and original PDFs.
+02 Volume I: original web pages 1–277.
+03 Volume II: original web pages 1–164.
+04 Volume III: original web pages 1–302.
+05 Volume IV A: original web pages 1–250.
+06 Volume IV B: original web pages 251–460.
+
+After all six batches are uploaded and GitHub Pages has deployed, reload the site. Original tables and diagrams appear within the reader. If a page says its pack is missing, check that every file from packages 02–06 is in the root-level pages folder.
+
+The individual website files are at most 4.1 MB; each download ZIP is under 20 MB. Splitting changes upload packaging only, not the reader or saved-progress format. Keep the same website URL and browser to preserve progress. Download a quiz backup before updating. Internet access is needed on iPhone/iPad; physical iOS testing was not performed.

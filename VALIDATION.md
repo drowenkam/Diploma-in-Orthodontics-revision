@@ -1,10 +1,11 @@
-# Validation — Diploma Orthodontics reference update
+# Original-page reader validation
 
-- All four PDFs and all six data files are byte-identical to the checked orthodontics source package.
-- 1,016 SBAs in Volume III; 768 SBAs and 255 true/false questions in Volume IV; 2,039 total questions.
-- 17,080 answer combinations tested against the scoring engine, including duplicate submission rejection.
-- All static local HTML links resolve and every JavaScript file passes syntax checks.
-- Desktop browser: submitted Volume III Q1 correctly; player showed 1/1 submitted marks, dashboard showed 1/2,039 unique questions and the correct last-set metrics. Reload retained progress.
-- Reference-style dashboard visually inspected; notes navigation retains existing reader routes.
+- Converted all 1,203 PDF pages into self-contained vector SVG pages, grouped into 27 compressed packs.
+- Decompressed every pack; parsed every page as valid SVG; counts match all four PDFs (277, 164, 302, 460).
+- Original source data, four PDFs, question keys and scoring engine unchanged.
+- Browser verified original Volume I page 45 with its table and coloured boxes, 125% zoom and readable-text switching.
+- Browser verified original Volume IV page 460 and its Return to library control.
+- Existing chapter selection, search, bookmarks, question source links and saved progress use the same routes and storage keys.
+- JavaScript syntax checks passed.
 
-Limitations: no physical iPhone/iPad testing, live GitHub deployment or independent clinical answer review. Existing per-set score and progress behavior retained. Source PDFs preserve diagrams and tables; the HTML reader uses extracted text.
+Limits: no physical iPhone/iPad testing or live GitHub deployment. Clinical content has not been independently reviewed. The SVG viewer requires DecompressionStream; readable text and optional PDF links remain available. A modern browser and a network connection are required for hosted pages not already loaded.
