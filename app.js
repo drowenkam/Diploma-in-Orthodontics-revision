@@ -1,0 +1,36 @@
+'use strict';
+const $=s=>document.querySelector(s),esc=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+let storageOK=true;const read=(k,d)=>{try{return JSON.parse(localStorage.getItem('ortho-'+k))??d}catch{return d}},save=(k,v)=>{try{localStorage.setItem('ortho-'+k,JSON.stringify(v))}catch{storageOK=false;}};
+let originalView=true, pageZoom=100;
+let marks=read('marks',[]),last=read('last',null),font=read('font',19),book=null,current=1,serial=0;const loading={};
+marks=Array.isArray(marks)?marks.filter(m=>m&&CATALOG.some(b=>b.id===m.id&&Number.isInteger(m.page)&&m.page>=1&&m.page<=b.count)):[];font=Number.isFinite(font)?Math.max(15,Math.min(30,font)):19;
+document.body.classList.toggle('dark',read('dark',false));document.documentElement.style.setProperty('--fs',font+'px');
+$('#theme').onclick=()=>{document.body.classList.toggle('dark');save('dark',document.body.classList.contains('dark'))};
+const romans=['I','II','III','IV'],desc=['Build your understanding.','Revise against the curriculum.','1,016 SBAs · answers and viva material.','1,023 questions · SBA and true/false.'];
+$('#cards').innerHTML=CATALOG.map((b,i)=>`<a class="card" href="#${b.id}/1"><span class="number">${romans[i]}</span><h2>${esc(b.title)}</h2><p>${desc[i]}</p><strong>${b.count} pages &nbsp; · &nbsp; Open volume →</strong></a>`).join('');
+$('#volume').innerHTML=CATALOG.map(b=>`<option value="${b.id}">${esc(b.title)}</option>`).join('');
+function home(){last=read('last',null);$('#resume').hidden=!last;$('#resume').onclick=()=>location.hash=last;$('#saved').innerHTML=marks.length?marks.map(m=>`<a href="#${m.id}/${m.page}">${esc(CATALOG.find(b=>b.id===m.id)?.title||m.id)} · PDF page ${m.page}</a>`).join(''):'<p>No saved pages yet. Tap Save while reading.</p>'}
+function load(id){if(window.BOOKS?.[id])return Promise.resolve(BOOKS[id]);if(!loading[id])loading[id]=new Promise((resolve,reject)=>{const s=document.createElement('script');s.src='data/'+id+'.js?v=3';const timer=setTimeout(()=>{delete loading[id];reject(Error('Loading timed out. Choose another volume or return to the library and retry.'));},20000);s.onload=()=>{clearTimeout(timer);resolve(BOOKS[id])};s.onerror=()=>{clearTimeout(timer);delete loading[id];reject(Error('Could not load this volume. Check your connection, then choose the volume again.'))};document.head.appendChild(s)});return loading[id]}
+async function route(){let n=++serial;const [id,p]=location.hash.slice(1).split('/');if(!CATALOG.some(b=>b.id===id)){$('#home').hidden=false;$('#reader').hidden=true;home();return}$('#home').hidden=true;$('#reader').hidden=false;const previousId=book?.id;book=null;$('#prev').disabled=$('#next').disabled=$('#bottomnext').disabled=$('#bookmark').disabled=true;$('#content').textContent='Loading…';try{const b=await load(id);if(n!==serial)return;const changed=previousId!==id;book=b;$('#bookmark').disabled=false;current=Math.max(1,Math.min(book.pages.length,parseInt(p)||1));$('#volume').value=id;$('#chapters').innerHTML='<option value="">Jump to section…</option>'+book.toc.map(t=>`<option value="${t[2]}">${t[0]>1?'— ':''}${esc(t[1])}</option>`).join('');if(changed){$('#query').value='';$('#results').textContent=''}save('last',`${id}/${current}`);render();window.scrollTo(0,0)}catch(e){if(n===serial)$('#content').textContent=e.message}}
+function render(){if(!book)return;$('#page').value=current;$('#page').max=book.pages.length;$('#total').textContent='/ '+book.pages.length;$('#pdf').href=book.pdf+'#page='+current;$('#prev').disabled=current===1;$('#next').disabled=current===book.pages.length;$('#bottomnext').disabled=false;$('#bottomnext').textContent=current===book.pages.length?'Return to library →':'Next page →';if(originalView){showOriginal(book.id,current);}else{cancelOriginal();$('#content').classList.remove('original-page');$('#content').style.width='';$('#content').innerHTML=book.pages[current-1].blocks.map(b=>`<p>${esc(b)}</p>`).join('');}$('#bookmark').textContent=marks.some(m=>m.id===book.id&&m.page===current)?'★ Saved':'☆ Save';$('#status').textContent=`${Math.round(current/book.pages.length*100)}% through this volume · ${storageOK?'Reading position saved on this browser.':'Reading position could not be saved: browser storage unavailable.'}`}
+function go(p){if(book)location.hash=book.id+'/'+Math.max(1,Math.min(book.pages.length,p))}
+$('#prev').onclick=()=>go(current-1);$('#next').onclick=()=>go(current+1);$('#bottomnext').onclick=()=>{if(book&&current===book.pages.length)location.hash='';else go(current+1);};$('#page').onchange=e=>go(parseInt(e.target.value)||1);$('#volume').onchange=e=>location.hash=e.target.value+'/1';$('#chapters').onchange=e=>{if(e.target.value)go(Number(e.target.value))};
+$('#bookmark').onclick=()=>{if(!book)return;const idx=marks.findIndex(m=>m.id===book.id&&m.page===current);if(idx<0)marks.push({id:book.id,page:current});else marks.splice(idx,1);save('marks',marks);render()};
+$('#view-mode').onclick=()=>{originalView=!originalView;$('#view-mode').textContent=originalView?'Switch to readable text':'Show original page';render()};
+function resize(d){if(originalView){pageZoom=Math.max(50,Math.min(250,pageZoom+d*25));$('#content').style.width=pageZoom+'%';return;}font=Math.max(15,Math.min(30,font+d));document.documentElement.style.setProperty('--fs',font+'px');save('font',font)}$('#smaller').onclick=()=>resize(-1);$('#larger').onclick=()=>resize(1);
+$('#searchform').onsubmit=e=>{e.preventDefault();if(!book)return;const q=$('#query').value.trim().toLowerCase();if(!q){$('#results').textContent='';return}const found=[];book.pages.forEach((p,i)=>{const t=p.blocks.join(' '),pos=t.toLowerCase().indexOf(q);if(pos>=0)found.push(`<a href="#${book.id}/${i+1}"><strong>PDF page ${i+1}</strong> · ${esc(t.slice(Math.max(0,pos-45),pos+150))}</a>`)});$('#results').innerHTML=`<p>${found.length} matching pages</p>`+found.join('')};
+window.addEventListener('hashchange',route);route();
+
+$('#page-go').onclick=()=>go(parseInt($('#page').value)||1);$('#page').onkeydown=e=>{if(e.key==='Enter'){e.preventDefault();go(parseInt(e.target.value)||1)}};
+
+// Contents directory for the fresh repository landing page.
+function contentsDirectory(){
+ const term=$('#chapter-search').value.trim().toLowerCase();let count=0;
+ $('#chapter-links').innerHTML=CATALOG.map((b,i)=>{
+  const matches=b.toc.filter(t=>!term||t[1].toLowerCase().includes(term));count+=matches.length;
+  if(!matches.length)return '';
+  return `<details class="chapter-volume" ${term?'open':''}><summary>Volume ${romans[i]} · ${esc(b.title)} <span>${matches.length} sections</span></summary><div class="chapter-items">${matches.map(t=>`<a href="#${b.id}/${t[2]}"><span>${esc(t[1])}</span><small>Page ${t[2]} →</small></a>`).join('')}</div></details>`;
+ }).join('');
+ $('#chapter-count').textContent=count?count+' matching sections':'No chapter titles match. Try another word, or open a volume and search its full text.';
+}
+$('#chapter-search').addEventListener('input',contentsDirectory);contentsDirectory();
